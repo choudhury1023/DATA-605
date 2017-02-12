@@ -1,0 +1,147 @@
+---
+title: "DATA 605 Assignment 2"
+author: "Ahsanul Choudhury"
+date: "February 12, 2017"
+output: 
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Problem set 1
+
+(1) Show that $A^TA\neq AA^T$ in general. (Proof and demonstration.)
+
+**Sol:**
+
+Let A = $(m \times n)$ =
+$$
+{\begin{bmatrix}
+ x_{1} \; x_{2} \; x_{3} \\ 
+ y_{1} \; y_{2} \; y_{3} \\ 
+ z_{1} \; z_{2} \; z_{3} 
+\end{bmatrix}}
+$$
+$\therefore  A^T = (n \times m)$ = 
+$$
+{\begin{bmatrix}
+ x_{1} \; y_{1} \; z_{1} \\ 
+ x_{2} \; y_{2} \; z_{2} \\ 
+ x_{3} \; y_{3} \; z_{3} 
+\end{bmatrix}}
+$$
+$A^TA$ =
+
+$$
+{\begin{bmatrix}
+ {x_{1}}^{2} + {y_{1}}^{2} + {z_{1}}^{2} \;\;\;\;\;\;\;\;\;\;\;\;\; x_{1} x_{2} + y_{1} y_{2} + z_{1} z_{2} \;\;\;\;\;\;\; x_{1} x_{3} + y_{1} y_{3} + z_{1} z_{3} \\ 
+ x_{2} x_{1} + y_{2} y_{1} + z_{2} z_{1} \;\;\;\;\;\;\; {x_{2}}^{2} + {y_{2}}^{2} + {z_{2}}^{2} \;\;\;\;\;\;\;\;\;\;\;\; x_{2} x_{3} + y_{2} y_{3} + z_{2} z_{3} \\ 
+ x_{3} x_{1} + y_{3} y_{1} + z_{3} z_{1} \;\;\;\;\;\;\;\; x_{3} x_{2} + y_{3} y_{2} + z_{3} z_{2} \;\;\;\;\;\;\;\;\;\;\;\; {x_{3}}^{2} + {y_{3}}^{2} + {z_{3}}^{2} \\ 
+\end{bmatrix}}
+$$
+
+$AA^T$ =
+$$
+{\begin{bmatrix}
+ {x_{1}}^{2} + {x_{2}}^{2} + {x_{3}}^{2} \;\;\;\;\;\;\;\;\;\;\;\; x_{1} y_{1} + x_{2} y_{2} + x_{3} y_{3} \;\;\;\;\;\;\; x_{1} z_{1} + x_{2} z_{2} + x_{3} z_{3} \\ 
+ y_{1} x_{1} + y_{2} x_{2} + y_{3} x_{3} \;\;\;\;\;\;\; {y_{1}}^{2} + {y_{2}}^{2} + {y_{3}}^{2} \;\;\;\;\;\;\;\;\;\;\;\;\;\; y_{1} z_{1} + y_{2} z_{2} + y_{3} z_{3} \\ 
+ z_{1} x_{1} + z_{2} x_{2} + z_{3} x_{3} \;\;\;\;\;\;\;\; z_{1} y_{1} + z_{2} y_{2} + z_{3} y_{3} \;\;\;\;\;\;\;\;\;\;\;\;\;\; {z_{1}}^{2} + {z_{2}}^{2} + {z_{3}}^{2} \\ 
+\end{bmatrix}}
+$$
+Example:
+
+A=
+```{r matrix_A, echo=TRUE}
+A <- matrix(seq(from=1,to=9), nrow=3)
+A
+```
+
+$A^T$=
+```{r matrix_A_T, echo=TRUE}
+A_T <- t(A)
+A_T
+```
+
+
+$A^TA$ =
+```{r ATA, echo=TRUE}
+t(A)%*%A
+```
+
+$AA^T$ =
+```{r AAT, echo=TRUE}
+A%*%t(A)
+```
+
+
+$A^TA\neq AA^T$ in general.
+
+
+
+(2) For a special type of square matrix A, we get AT $A^TA= AA^T$. Under what conditions could this be true? (Hint: The Identity matrix I is an example of such a matrix).
+
+**Answer:**
+
+$A^TA= AA^T$ only occurs when $A^T$ = A. In other words, the transpose of the matrix is the same as the matrix itself. 
+
+
+***
+
+
+###Problem set 2
+
+Matrix factorization is a very important problem. There are supercomputers built just to do matrix factorizations. Every second you are on an airplane, matrices are being factorized. Radars that track flights use a technique called Kalman filtering. At the heart of Kalman Filtering is a Matrix Factorization operation. Kalman Filters are solving linear systems of equations when they track your flight using radars.
+
+Write an R function to factorize a square matrix A into LU or LDU, whichever you prefer.
+
+**Sol:**
+
+```{r function_LDU, echo=TRUE}
+fun_LU <- function(A){
+  #Check for valid input
+  if(nrow(A) != ncol(A)){
+    stop("Input must be square matrix.")
+  }
+    else {
+    n <- nrow(A)
+    L <- diag(n)
+    U <- A
+      for (i in 1:(n - 1)) {
+      for (j in (i + 1):n) {
+        # get multipliers
+        L[j, i] <- U[j, i] / U[i, i]
+        # pivots and multiplication
+        U[j, ]  <- U[j, ] - L[j, i] * U[i, ]
+      }
+    }
+    
+        #Get results
+        LU <- list("L" = L, "U" = U)
+    }
+}
+
+```   
+
+
+**Testing the function using Matrix given in lecture note for week 2**
+```{r find_LU, echo=TRUE}
+A <- matrix(c(1,2,3,1,1,1,2,0,1),nrow=3)
+A
+LU <- fun_LU(A)
+LU
+```
+
+
+```{r test, echo=TRUE}
+fun_LU(A)$L %*% fun_LU(A)$U 
+
+fun_LU(A)$L %*% fun_LU(A)$U  == A
+```
+
