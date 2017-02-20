@@ -1,0 +1,369 @@
+---
+title: "DATA 605 Assignment 3"
+author: "Ahsanul Choudhury"
+date: "February 19, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Problem set 1
+
+(1) What is the rank of the matrix A?
+$$
+A =
+\begin{bmatrix}
+1 & 2 & 3 & 4 \\
+-1 & 0 & 1 & 3 \\
+0 & 1 & -2 & 1 \\
+5 & 4 & -2 & -3
+\end{bmatrix}
+$$
+**Sol:**
+
+```{r rank_A, echo=TRUE}
+A <- matrix(c(1, 2, 3, 4, -1, 0, 1, 3,0, 1, -2, 1, 5, 4, -2, -3), nrow = 4, byrow = T)
+A
+qr(A)$rank
+```
+
+The Rank of the matrix is `r qr(A)$rank`.
+
+(2) Given an mxn matrix where m > n, what can be the maximum rank? The minimum
+rank, assuming that the matrix is non-zero?
+
+**Slol**
+
+In a mxn matris where m > n the maximum rank will be the the minimum between m and n. In our case the minumum is n, the rows below the nth column will be multiple of each other and will be eliminated, so the maximum rank will be n.
+
+If we assume the matrix is non-zero the minimum rank will be 1 as there will be atleast 1 pivot.
+
+
+(3) What is the rank of matrix B?
+
+$$
+B =
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 6 & 3 \\
+2 & 4 & 2
+\end{bmatrix}
+$$
+
+```{r rank_B, echo=TRUE}
+B <- matrix(c(1, 2, 1, 3, 6, 3, 2, 4, 2), nrow = 3, byrow = T)
+B
+qr(B)$rank
+```
+
+The rank of the matrix is `r qr(B)$rank`.
+
+***
+
+###Problem set 2
+
+Compute the eigenvalues and eigenvectors of the matrix A. You'll need to show your
+work. You'll need to write out the characteristic polynomial and show your solution.
+
+$$
+A =
+\begin{bmatrix}
+1 & 2 & 3 \\
+0 & 4 & 5 \\
+0 & 0 & 6
+\end{bmatrix}
+$$
+**Sol**
+
+***Eigenvalue***
+
+$$
+\lambda I_{3} =
+\begin{bmatrix}
+\lambda & 0 & 0 \\
+0 & \lambda & 0 \\
+0 & 0 & \lambda
+\end{bmatrix}
+$$
+
+$$
+\lambda I_{3} - A =
+\begin{bmatrix}
+\lambda - 1 & -2 & -3 \\
+0 & \lambda - 4 & -5 \\
+0 & 0 & \lambda - 6
+\end{bmatrix}
+$$
+$\lambda$ is a eigenvalue of a if, $det(\lambda I_{3} - A) = 0$
+
+$(\lambda - 1) (\lambda - 4) (\lambda - 6) + (-2 \times -5 \times 0) + (3 \times  0 \times  0) - (-2 \times 0 \times (\lambda - 6)) - ((\lambda - 1) \times - 5 \times - 0) - (-3 \times (\lambda - 4) \times  0) = 0$
+
+$\Rightarrow (\lambda - 1) (\lambda - 4) (\lambda - 6) = 0$
+
+$\therefore$ eigenvalues are $\lambda_{1} = 1, \; \lambda_{2} = 4, \; \lambda_{3} = 6$
+
+***Eigenvactor***
+
+$(\lambda I_{n} - A) \vec{v} = \vec{0}$
+
+Or
+
+$$
+\begin{bmatrix}
+\lambda - 1 & -2 & -3 \\
+0 & \lambda - 4 & -5 \\
+0 & 0 & \lambda - 6
+\end{bmatrix}
+\vec{v} = \vec{0}
+$$
+
+For $\lambda_{1} = 1$
+
+$$
+\begin{bmatrix}
+1 - 1 & -2 & -3 \\
+0 & 1 - 4 & -5 \\
+0 & 0 & 1 - 6
+\end{bmatrix}
+\vec{v} = \vec{0}
+$$
+
+$$
+\begin{bmatrix}
+0 & -2 & -3 \\
+0 & -3 & -5 \\
+0 & 0 & -5
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}=
+\begin{bmatrix}
+0 \\
+0 \\
+0
+\end{bmatrix}
+$$
+
+
+```{r lambda1, echo=TRUE}
+A1 <- matrix(c(0, -2,-3, 0, -3, -5, 0, 0, -5), nrow = 3, byrow = T)
+#Divide row 1 by -2
+A1[1,] <- A1[1,] / -2
+A1
+#Multiply row 1 by 3 and add it to 2 row
+A1[2,] <- A1[1,] *3 + A1[2,]
+A1
+#Divide row 2 by -0.5
+A1[2,] <- A1[2,] / -.5
+A1
+#Multiply row 2 by 1.5 and subtract it from row 1
+A1[1,] <- A1[1,] - A1[2,] * 1.5
+A1
+#Multiply row 2 by 5 and add it to 3 row
+A1[3,] <- A1[3,] + A1[2,] * 5
+A1
+```
+
+$$
+(\lambda I_{3} - A)v = 
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & 0 & 1  \\
+0 & 0 & 0 
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}
+$$
+
+$v_{2} = 0$
+
+$v_{3} = 0$
+
+Let, $v_{1} = t$
+
+$$
+E_{\lambda =1}= t
+\begin{bmatrix}
+1 \\
+0 \\
+0
+\end{bmatrix}
+$$
+For t is any real number
+
+For $\lambda_{2} = 4$
+
+$$
+\begin{bmatrix}
+4 -1 & -2 & -3 \\
+0 & 4 - 4 & -5 \\
+0 & 0 & 4 - 6
+\end{bmatrix}
+\vec{v} = \vec{0}
+$$
+
+$$
+\begin{bmatrix}
+3 & -2 & -3 \\
+0 & 0 & -5 \\
+0 & 0 & -2
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}=
+\begin{bmatrix}
+0 \\
+0 \\
+0
+\end{bmatrix}
+$$
+
+```{r lambda2, echo=TRUE}
+A4 <- matrix(c(3, -2, -3, 0, 0, -5, 0, 0, -2), nrow = 3, byrow = T)
+#Divide the row 1 by 3
+A4[1,] <- A4[1,]/3
+A4
+#Divide the row 2 by -5
+A4[2,] <- A4[2,] / -5
+A4
+#Multiply 2 row by 1 and add it to 1 row
+A4[1,] <- A4[1,] + A4[2,] 
+A4
+#Multiply row 2 by 2 and add it to row 3
+A4[3,] <- A4[2,] * 2 + A4[3,]
+A4
+```
+
+$$
+(\lambda I_{3} - A)v = 
+\begin{bmatrix}
+1 & -0.6666667 & 0 \\
+0 & 0 & 1 \\
+0 & 0 & 0 
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}
+$$
+
+$v_{1} - 0.6666667v_{2} = 0$
+
+$v_{3} = 0$
+
+Let, $v_{2} =t$
+
+$\therefore 0.6666667t = v_{1}$
+
+$$
+E_{\lambda =4}= t
+\begin{bmatrix}
+0.6666667 \\
+1 \\
+0
+\end{bmatrix}
+$$
+
+For t is any real number
+
+For $\lambda_{3} = 6$
+
+$$
+\begin{bmatrix}
+6 -1 & -2 & -3 \\
+0 & 6 - 4 & -5 \\
+0 & 0 & 6 - 6
+\end{bmatrix}
+\vec{v} = \vec{0}
+$$
+
+
+$$
+\begin{bmatrix}
+5 & -2 & -3 \\
+0 & 2 & -5 \\
+0 & 0 & 0
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}=
+\begin{bmatrix}
+0 \\
+0 \\
+0
+\end{bmatrix}
+$$
+
+
+```{r lambda3, echo=TRUE}
+A6 <- matrix(c(5, -2, -3, 0, 2, -5, 0, 0, 0), nrow = 3, byrow = T)
+#divide the row 1 by 5
+A6[1,] <- A6[1,] / 5
+A6
+#Divide the row 2 by 2
+A6[2,] <- A6[2,] / 2
+A6
+#Multiply row 2 by 0.4 and add it to row 1
+A6[1,] <- A6[2,] * .4 + A6[1,]
+A6
+```
+
+$$
+(\lambda I_{3} - A)v = 
+\begin{bmatrix}
+1 & -0.4 & -1.6 \\
+0 & 1 & -2.5 \\
+0 & 0 & 0 
+\end{bmatrix}
+\begin{bmatrix}
+v_{1} \\
+v_{2} \\
+v_{3}
+\end{bmatrix}
+$$
+
+$v_{1} - 1.6v_{3} = 0$
+
+$v_{2} - 2.5v_{3}= 0$
+
+Let, $v_{3} =t$
+
+$\therefore 1.6t = v_{1}$
+
+$2.5t = v_{2}$
+
+$$
+E_{\lambda =6}= t
+\begin{bmatrix}
+1.6 \\
+2.5 \\
+0
+\end{bmatrix}
+$$
+
+For t is any real number
+
+Using R
+
+```{r eigen, echo=TRUE}
+A <- matrix(c(1, 2, 3, 0, 4, 5, 0, 0, 6), nrow = 3, byrow = T)
+eigen(A)
+```
