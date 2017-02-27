@@ -1,0 +1,136 @@
+---
+title: "DATA 605 Assignment 4"
+author: "Ahsanul Choudhury"
+date: "February 22, 2017"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Problem set 1
+
+   In this problem, we'll verify using R that SVD and Eigenvalues are related as worked
+out in the weekly module. Given a 3 × 2 matrix **A**
+
+$$
+A =
+\begin{bmatrix}
+1 & 2 & 3 \\
+-1 & 0 & 4
+\end{bmatrix}
+$$
+write code in R to compute $X = AA^{T}$ and $Y = A^{T}A$. Then, compute the eigenvalues and eigenvectors of **X** and **Y** using the built-in commans in R.
+
+   Then, compute the left-singular, singular values, and right-singular vectors of **A** using the svd command. Examine the two sets of singular vectors and show that they are indeed eigenvectors of **X** and **Y**. In addition, the two non-zero eigenvalues (the 3rd value will be very close to zero, if not zero) of both **X** and **Y** are the same and are squares of the non-zero singular values of **A**.
+   
+***Sol:***
+
+The Matrix:
+```{r matrix, echo=TRUE}
+(A <- matrix(c(1,-1,2,0,3,4),nrow=2))
+```
+
+Code in R to compute $X = AA^{T}$:
+```{r AAT, echo=TRUE}
+(X <- A %*% t(A))
+```
+
+Code in R to compute $Y = A^{T}A$:
+```{r ATA, echo=TRUE}
+(Y <- t(A) %*% A)
+```
+
+Eigenvalues:
+```{r eigenvalues, echo=TRUE}
+(lambda_x <- eigen(X)$values)
+(lambda_y <- eigen(Y)$values)
+```
+
+Eigenvectors:
+```{r eigenvectors, echo=TRUE}
+(v_x <- eigen(X)$vectors)
+(v_y <- eigen(Y)$vectors)
+```
+
+The left-singular, singular values, and right-singular vectors of A using the svd command:
+```{r svd, echo=TRUE}
+svd_a <- svd(A)
+
+#The left-singular vectors (u) of A is:
+svd_a$u
+
+#The singular values (d) of A is:
+svd_a$d
+
+#The right-singular vectors (v) of A is:
+svd_a$v
+```
+
+
+***Examine the two sets of singular vectors and show that they are indeed eigenvectors of X and Y.***
+
+By examining the results above, we can see left-singular vectors (u) contains eigenvectors of **X** and right-singular vectors (v) contains eigen vectors of **Y**, although the first two columns of eignvectors of **X** and **Y** has the opposite sign of u and v they are equivalent as they simply represent scalar multiplication.
+
+
+***the two non-zero eigenvalues (the 3rd value will be very close to zero, if not zero) of both **X** and **Y** are the same and are squares of the non-zero singular values of **A**.***
+
+```{r sing_squred, echo=TRUE}
+(d_sq <- svd_a$d^2)
+```
+From the aboove result we can see the two non-zero eigenvalues of both **X** and **Y** are the same and are squres of the non-zero singular values of **A**.
+
+
+***
+
+###Problem set 2
+
+   Using the procedure outlined in section 1 of the weekly handout, write a function to compute the inverse of a well-conditioned full-rank square matrix using co-factors. In order to compute the co-factors, you may use built-in commands to compute the determinant. Your function should have the following signature:
+
+B = myinverse(A)
+
+   where **A** is a matrix and **B** is its inverse and **A×B = I**. The off-diagonal elements of **I** should be close to zero, if not zero. Likewise, the diagonal elements should be close to 1, if not 1. Small numerical precision errors are acceptable but the function myinverse should be correct and must use co-factors and determinant of **A** to compute the inverse.
+
+
+***Sol:***
+
+```{r function, echo=TRUE}
+myinverse <- function(x) {
+  # check if matrix is square
+  if(nrow(x) != ncol(x)) { return('takes only squre matrix as input')}
+  cofactor_Matrix <- matrix(rep(0,length(x)),ncol=ncol(x))
+  for (i in 1:ncol(x)) {
+    for (j in 1:nrow(x)) {
+      cofactor_Matrix[i,j] <- det(x[-i,-j])*(-1)^(i+j) 
+    }
+  }
+  return(t(cofactor_Matrix)/det(x)) 
+}
+```
+
+Test function using matrix from problem set 2 in assignment 2
+
+```{r test, echo=TRUE}
+A <- matrix(c(1, 2, 3, 1, 1, 1, 2, 0, 1),nrow=3)
+#Inverse using 'myinverse' function
+(B <- myinverse(A))
+#Inverse using 'solve' command
+(sol_B <- solve(A))
+#Test
+round(B, 3) == round(sol_B, 3)
+```
+
+
+
+
+
+
+
+
