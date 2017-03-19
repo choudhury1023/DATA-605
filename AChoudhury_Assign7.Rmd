@@ -1,0 +1,97 @@
+---
+title: "DATA 605 Assignment 7"
+author: "Ahsanul Choudhury"
+date: "March 19, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Problem set 1
+
+This week, you'll have only one programming assignment. Please write a function to compute the expected value and standard deviation of an array of values. Compare your results with that of R's mean and std functions. Please document your work in an RMarkdown file and ensure that you have good comments to help the reader follow your work.
+
+Now, consider that instead of being able to neatly fit the values in memory in an array, you have an infinite stream of numbers coming by. How would you estimate the mean and standard deviation of such a stream? Your function should be able to return the current estimate of the mean and standard deviation at any time it is asked. Your program should maintain these current estimates and return them back at any invocation of these functions. (Hint: You can maintain a rolling estimate of the mean and standard deviation and allow these to slowly change over time as you see more and more new values).
+
+   ***Sol:***
+   
+```{r myfunctions, echo = TRUE}
+# Expected value function
+my_ev <- function(x){
+  m <- sum(x)/length(x)
+  return(m)
+}
+
+# Standard deviation function
+my_sd <- function(x){
+  s <- sqrt(sum((x-my_ev(x))^2)/(length(x)-1))
+  return(s)
+}
+
+# Generate random array of values
+set.seed(7)
+x <- sample(100, 10, replace = FALSE, prob = NULL)
+
+# Mean using function created
+(my_ev_function <- my_ev(x))
+
+# Standard deviation using function
+(my_sd_function <- my_sd(x))
+
+# r mean
+(r_mean <- mean(x))
+
+# r Standard deviation
+(r_sd <- sd(x))
+
+# Compare expected value/mean
+my_ev_function == r_mean
+
+# Compare standard deviation
+my_sd_function == r_sd
+
+```
+
+
+```{r stream, echo=TRUE}
+stream_data <- function(x){
+  # Define variables
+  n <- 0
+  mean <- 0.0
+  M2 <- 0.0
+  
+  for (i in x){
+    n <- n + 1
+    # Calculate mean of streaming data
+    d <- i - mean
+    mean <- mean + d/n
+    d2 <- i - mean
+    M2 <- M2 + d * d2
+    # Calculate standard deviation of streaming data
+    if (n < 2) {
+      sd <- 0
+    }else{
+      sd <- sqrt(M2/(n-1))
+    }
+     # Print the rolling mean and standard deviation for the global stream
+     result <- print (c("Length" = round(n), "Mean" = round(mean, 3), "Standard deviation" = round(sd, 3)))
+    }
+  
+}
+
+# Test using the randomly generated array from previous section
+test <- stream_data(x)
+
+```
+
+###Referecne:
+
+https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
