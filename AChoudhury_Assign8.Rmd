@@ -1,0 +1,100 @@
+---
+title: "Data 605 Assignment 8"
+author: "Ahsanul Choudhury"
+date: "March 26, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+###Problem set 1
+
+
+Your colleague either commutes by train or by the bus. 20 days of the month, she takes the train and the remaining 10 days she takes the bus. If she takes the
+train, she reaches work on time with a probability of 0.9. If she takes the bus, she frequently gets stuck in traffic and reaches work on time with a probability of 0.5. Given that she was on time today, what is the probability that she took the bus to work today?
+
+
+***Sol:***
+
+Probabiliy of my colleague taking the bus given that she was on time today is:
+
+```{r corpus1, echo=TRUE}
+# Known variables and probabilities
+train_days <- 20
+bus_days<- 10
+total_days <- train_days + bus_days
+train_on_time_p <- 0.9
+bus_on_time_p <- 0.5
+
+# Probability of taking train and bus in any given day
+train_p <- train_days/total_days
+bus_p <- bus_days/total_days
+
+# Probability of her taking the bus while being on time today
+(today <- bus_p * bus_on_time_p / (bus_p * bus_on_time_p + train_p * train_on_time_p))
+```
+
+
+***
+
+###Problem set 2
+
+In the Grade Network that we looked at in the notes, what happens to the probability of Difficulty of Course when you present the evidence that the received recommendation letter was good? In addition, now present the evidence that both SAT scores were good and the letter of recommendation was good, What is the probability of the Difficulty of Course now? You should use the **gRain** package in R to build your network and perform these calculations.
+
+```{r network, echo=TRUE}
+suppressWarnings(suppressMessages(library(gRain)))
+
+no_yes <- c("no", "yes")
+low_high <- c("low","high")
+
+# Difficulty of course is Yes 70% of the time and No 30%
+difficulty <- cptable(~Difficulty, values = c(0.3, 0.7), levels = no_yes)
+
+# Intelligence is Low 80% and High 20% of the time
+intelligence <- cptable(~Intelligence, values = c(0.8, 0.2), levels = low_high)
+
+# SAT scores given Intelligence:
+sat_intelligence <- cptable(~SAT|Intelligence, values = c(0.9, 0.1, 0.2, 0.8), levels = low_high)
+
+# Grade is High or Low given Difficulty of course and Intelligence
+grade_difficulty_intelligence <- cptable(~Grade|Difficulty:Intelligence, values = c(0.6, 0.4, 0.8, 0.2, 0.01, 0.99, 0.1, 0.9), levels = low_high)
+
+
+# Letter High given Grade Low 10%, Letter High given Grade High 95%
+letter_grade <- cptable(~Letter|Grade, values = c(0.9, 0.1, 0.05, 0.95), levels = low_high)
+
+# Compile list of conditional probability tables
+plist <- compileCPT(list(difficulty, intelligence, sat_intelligence, grade_difficulty_intelligence, letter_grade))
+
+# Plot network
+n <- grain(plist)
+plot(n)
+```
+
+   **Probability of Difficulty of Course when you present the evidence that the received recommendation letter was good:**
+
+```{r difficylty2, echo=TRUE}
+difficulty2 <- setEvidence(n, "Letter", "high")
+(querygrain(difficulty2, "Difficulty", type="marginal"))
+```
+
+The probability of Difficulty of Course goes from Y = 0.7 & N = 0.3, to Y = 0.6268561 & N = 0.3731439
+
+
+   **Evidence that both SAT scores were good and the letter of recommendation was good, What is the probability of the Difficulty of Course:**
+
+```{r difficulty3, echo=TRUE}
+difficulty3 <- setEvidence(n,  c("SAT", "Letter"), c("high", "high"))
+(querygrain(difficulty3, "Difficulty"))
+```
+
+The probability of Difficulty of Course goes from Y = 0.7 & N = 0.3, to Y = 0.6676522 & N = 0.3323478
