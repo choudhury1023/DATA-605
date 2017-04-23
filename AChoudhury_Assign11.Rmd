@@ -1,0 +1,148 @@
+---
+title: "DATA 605 Assignment 11"
+author: "Ahsanul Choudhury"
+date: "April 23, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## LINEAR REGRESSION IN R
+
+### Max Heart Rate vs Age
+
+Using R's lm function, perform regression analysis and measure the significance of the independent variables for the following two data sets. In the first case, you are evaluating the statement that we hear that Maximum Heart Rate of a person is related to their age by the following equation:
+
+$$MaxHR = 220 - Age$$
+You have been given the following sample:
+
+```{r sample, echo = TRUE}
+Age   <- c(18, 23, 25, 35, 65, 54, 34, 56, 72, 19, 23, 42, 18, 39, 37)
+MaxHR <- c(202, 186, 187, 180, 156, 169, 174, 172, 153, 199, 193, 174, 198, 183, 178)
+(HR_data <- data.frame(Age,MaxHR))
+```
+
+Perform a linear regression analysis fitting the Max Heart Rate to Age using the lm function in R. What is the resulting equation? Is the effect of Age on Max HR significant? What is the significance level? Please also plot the fitted relationship between Max HR and Age.
+
+```{r linear_regression, echo = TRUE}
+# lm function to perform a linear regression analysis
+(HR_data_lm <- summary(lm(MaxHR ~ Age, data = HR_data))) 
+```
+
+**Regression fit equation**
+
+$\widehat{MaxHR} = `r HR_data_lm$coefficients[[1]]` + `r HR_data_lm$coefficients[[2]]` \times Age$
+
+**Hypoithesis**
+
+$H_O$: There is no significant relationship between Maximum Heart Rate of a person and Age.
+
+$H_A$: There is a significant relationship between Maximum Heart Rate of a person and Age.
+
+
+We see our model has a p value of `r HR_data_lm$coefficients[[8]]` which is much lower than 0.05, hence we can reject $H_O$ and conclude Age has a statistically significant effect on Max HR.
+
+
+```{r plot, echo = TRUE}
+plot(HR_data$Age, HR_data$MaxHR, main = "Scatter Plot", xlab = "Age", ylab = "MaxHR")
+abline(lm(HR_data$MaxHR~HR_data$Age), col="red")
+```
+
+
+### Auto Data Set
+
+Using the ***Auto*** data set from Assignment 5 (also attached here) perform a Linear Regression analysis using mpg as the dependent variable and the other 4 (***displacement, horsepower, weight, acceleration***) as independent variables. What is the final linear regression fit equation? Which of the 4 independent variables have a significant impact on mpg? What are their corresponding significance levels? What are the standard errors on each of the coefficients? Please perform this experiment in two ways. First take any random 40 data points from the entire auto data sample and perform the linear regression fit and measure
+the 95% confidence intervals. Then, take the entire data set (all 392 points) and perform linear regression and measure the 95% confidence intervals. Please report the resulting fit equation, their significance values and confidence intervals for each of the two runs.
+
+```{r auto, echo=TRUE}
+
+# Setting working directory
+# Note: Both .rmd and .data needs to be in same directory
+set_directory <- function(directory) {
+if (!is.null(directory))
+   setwd(directory)
+}
+
+# Read data and give column names
+auto_data <- read.table("auto-mpg.data", header=FALSE,as.is=TRUE)
+colnames(auto_data) <- c("displacement", "horsepower","weight","acceleration","mpg")
+```
+
+####Random 40 data points
+
+```{r auto_40, echo=TRUE}
+# Take a random 40 data points
+set.seed(7)
+auto_rand40 <- auto_data[sample(1:nrow(auto_data), 40, replace = F), ]
+
+# lm function to perform a linear regression analysis
+auto_rand40_fit <- lm(mpg ~ displacement + horsepower + weight + acceleration, auto_rand40)
+(auto_rand40_lm <- summary(auto_rand40_fit))
+```
+
+**Final linear regression fit equation**
+
+$$\widehat{mpg} = `r auto_rand40_lm$coefficients[[1]]` + `r auto_rand40_lm$coefficients[[2]]` \times displacement + `r auto_rand40_lm$coefficients[[3]]` \times horsepower + `r auto_rand40_lm$coefficients[[4]]` \times weight + `r auto_rand40_lm$coefficients[[5]]` \times  acceleration$$
+
+
+```{r 40_pv, echo=TRUE}
+p_values <- auto_rand40_lm$coefficients[2:5,"Pr(>|t|)"]
+p_values[which(p_values < .05)]
+```
+
+Based on p-values we can conclude only ***weight (`r p_values[which(p_values < .05)]`)*** has a significant impact on ***mpg***.
+
+**Standard errors**
+
+```{r se_40, echo=TRUE}
+auto_rand40_lm$coefficients[2:5,"Std. Error"]
+```
+
+**95% confidence intervals**
+
+```{r rand40_conf95, echo=TRUE}
+confint(auto_rand40_fit, level=0.95)
+```
+
+####Entire data set
+
+```{r auto_pop, echo=TRUE}
+# lm function to perform a linear regression analysis
+auto_data_fit <- lm(mpg ~ displacement + horsepower + weight + acceleration, auto_data)
+auto_data_lm  <- summary(auto_data_fit)
+```
+
+**Final linear regression fit equation**
+
+$$\widehat{mpg} = `r auto_data_lm$coefficients[[1]]` + `r auto_data_lm$coefficients[[2]]` \times displacement + `r auto_data_lm$coefficients[[3]]` \times horsepower + `r auto_data_lm$coefficients[[4]]` \times weight + `r auto_data_lm$coefficients[[5]]` \times  acceleration$$
+
+```{r data_pv, echo=TRUE}
+p_values <- auto_data_lm$coefficients[2:5,"Pr(>|t|)"]
+p_values[which(p_values < .05)]
+```
+
+Based on p-values we can conclude ***horsepower (`r auto_data_lm$coefficients[[18]]`)*** and ***weight (`r auto_data_lm$coefficients[[19]]`)*** have a significant impact on ***mpg***.
+
+**Standard errors**
+
+```{r se_data, echo=TRUE}
+auto_data_lm$coefficients[2:5,"Std. Error"]
+```
+
+**95% confidence intervals**
+
+```{r data_conf95, echo=TRUE}
+confint(auto_data_fit, level=0.95)
+```
+
+###Conclusion
+By examining all the models we can see with the larger data set we get a reduction in standard errors, p-value and confidence interval, so we can conclude the larger data set gives us a more accurate basis for estimation.
