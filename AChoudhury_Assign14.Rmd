@@ -1,0 +1,103 @@
+---
+title: "DATA 605 Assignment 14"
+author: "Ahsanul Choudhury"
+date: "May 12, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This week, we'll work out some Taylor Series expansions of popular functions.
+
+-   $f(x) = \frac{1}{(1-x)}$
+
+-   $f(x) = e^x$
+
+-   $f(x) = ln(1 + x)$
+
+For each function, only consider its valid ranges as indicated in the notes when you are computing the Taylor Series expansion. Please submit your assignment as a R-Markdown document.
+
+$\\$
+
+$\\$
+
+###$f(x) = \frac{1}{(1-x)}$
+
+$f(a)\quad =\quad \frac { 1 }{ 1\quad -\quad a }$;   $\quad\quad f(0) = 1$
+
+${ f }^{ \prime }(a)\quad =\quad \frac { 1 }{ { (1-a) }^{ 2 } }$;    $\quad\quad f^{(1)}(0) = 1$
+
+${ f }^{ \prime \prime }(a)\quad =\quad \frac { 2 }{ { (1-a) }^{ 3 } }$;    $\quad\quad f^{(2)}(0) = 2$
+
+${ f }^{ \prime \prime \prime}(a)\quad =\quad \frac { 6 }{ { (1-a) }^{ 4 } }$;    $\quad\quad f^{(3)}(0) = 6$
+
+${ f }^{(4)}(a)\quad =\quad \frac { 24 }{ { (1-a) }^{ 5 } }$;    $\quad\quad f^{(4)}(0) = 24$
+
+
+Plug in the relevant expressions into formula for Taylor Series expansion:
+
+$f(a) + {{ f }^{ \prime }}(a)(x-a) + \frac{{ f }^{ \prime \prime }}{2!}(x-a) +  \frac {{ f }^{ \prime \prime \prime }}{3!}(x - a) + \frac {f^{(4)}}{4!}(x - a) +...$
+
+$= 1 + 1x + \frac{2}{2!}x^2 + \frac{6}{3!}x^3 + \frac{24}{4!}x^4 +...$
+
+which reduces to,
+
+$1 + x + x^2 + x^3 + x^4 + x^5...$
+
+$= \sum_{ n=0 }^{ \infty }x^n$
+
+$\\$
+
+$\\$
+
+### $f(x) = e^x$
+
+$f(a) \quad= \quad { e }^{ a }$;   $\quad\quad f(0) = 1$
+
+${ f }^{ \prime }(a)\quad =\quad { e }^{ a }$;  $\quad\quad { f }^{ \prime }(0) = 1$
+
+${ f }^{ \prime \prime }(a)\quad =\quad { e }^{ a }$;   $\quad\quad { f }^{ \prime \prime }(0) = 1$
+
+${ f }^{ \prime \prime \prime }(a)\quad =\quad { e }^{ a }$;   $\quad\quad { f }^{ \prime \prime \prime }(0) = 1$
+
+$f^{(4)}(a)\quad = \quad { e }^{ a }$;   $\quad\quad f^{(4)}(0) = 1$
+
+Plug in the relevant expressions into formula for Taylor Series expansion:
+
+$f(a) + {{ f }^{ \prime }}(a)(x-a) + \frac{{ f }^{ \prime \prime }}{2!}(x-a) +  \frac {{ f }^{ \prime \prime \prime }}{3!}(x - a) + \frac {f^{(4)}}{4!}(x - a) +...$
+
+$= 1 + \frac{x^2}{2} + \frac{x^3}{3} + \frac{x^4}{4} + ...$
+
+$= \sum _{n=0 }^{\infty}\frac{x^n}{n!}$
+
+$\\$
+
+$\\$
+
+###$f(x) = ln(1 + x)$
+
+$f(a) \quad= \quad ln(1+a)$;   $\quad= \quad f(0) = 0$
+
+${ f }^{ \prime }(a) \quad= \quad \frac{1}{1+a}$;   $\quad= \quad { f }^{ \prime }(0) = 1$
+
+${ f }^{ \prime \prime }(a) \quad= \quad \frac{-1}{(1+a)^2}$;   $\quad= \quad { f }^{ \prime \prime }(0) = -1$
+
+${ f }^{ \prime \prime \prime }(a) \quad= \quad \frac{2}{(1+a)^3}$;   $\quad= \quad { f }^{ \prime \prime \prime } (0) = 2$
+
+$f^{(4)}(a) \quad= \quad \frac{-6}{(1+a)^4}$;   $\quad= \quad f^{(4)}(0) = -6$
+
+Plug in the relevant expressions into formula for Taylor Series expansion:
+
+$f(a) + {{ f }^{ \prime }}(a)(x-a) + \frac{{ f }^{ \prime \prime }}{2!}(x-a) +  \frac {{ f }^{ \prime \prime \prime }}{3!}(x - a) + \frac {f^{(4)}}{4!}(x - a) +...$
+
+$=x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} +...$
+
+$= \sum _{n=0 }^{\infty}(-1)^{n+1}\frac{x^n}{n!}$
