@@ -1,0 +1,390 @@
+---
+title: "DATA 605 Final Project"
+author: "Ahsanul Choudhury"
+date: "May 14, 2017"
+output:
+  html_document:
+     theme: cerulean
+     toc: true
+     toc_float:
+       collapsed: false
+       smooth_scroll: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load_libraries, results='hide', message=FALSE, warning=FALSE}
+library(DT)
+library(e1071)
+library(MASS)
+```
+
+
+Load data:
+
+```{r load_csv, , message=FALSE, warning=FALSE}
+housing <- read.csv("https://raw.githubusercontent.com/choudhury1023/DATA-605/master/Final%20Exam/train.csv", stringsAsFactors = FALSE)
+datatable(housing, options = list(pageLength = 10))
+```
+
+
+###Part 1: Pick variables
+
+Pick one of the quantitative independent variables from the training data set (train.csv) , and define that variable as  X.   Pick SalePrice as the dependent variable, and define it as Y for the next analysis.
+
+For my project I am picking ***BedroomAbvGr*** as my independent variable.
+
+
+
+skewness(housing$BedroomAbvGr)
+
+
+Define variables:
+
+```{r my_variables, echo=TRUE}
+X <- housing$BedroomAbvGr
+Y <- housing$SalePrice
+```
+
+
+
+###Part 2: Probability
+
+***Calculate as a minimum the below probabilities a through c.  Assume the small letter "x" is estimated as the 4th quartile of the X variable, and the small letter "y" is estimated as the 2d quartile of the Y variable.  Interpret the meaning of all probabilities.*** 
+
+$$a.\quad	 P(X>x | Y>y)\quad\quad		b.\quad  P(X>x, Y>y)\quad\quad		c.\quad  P(X<x | Y>y)$$		
+
+***4th quartile of X & 2nd Quartile of Y***
+```{r quantile, echo=TRUE}
+# 4th quartile of X
+(x <- quantile(X, 1))
+
+# 2nd Quartile of Y
+(y <- quantile(Y, 0.50))
+```
+
+
+```{r number of rows, echo=TRUE}
+# Total number of rows in the dataframe
+(n<-(nrow(housing)))
+
+# Number or rows where the SalePrice is higher then 2nd quantile (higer then 16300)
+(ny<-nrow(subset(housing, Y > y)))
+```
+
+a.   $P(X>x | Y>y)$, probability of BedroomAbvGr is higer then 4th quantile (more then 8) given that SalePrice is higher then 2nd quantile (higer then 16300)
+```{r p1, echo=TRUE}
+(pa <- nrow(subset(housing, X > x & Y > y))/ny)
+```
+
+b.   $P(X>x, Y>y)$, probability of both BedroomAbvGr is higer then 4th quantile (more then 8) and SalePrice is higher then 2nd quantile (higer then 16300)
+```{r p2, echo=TRUE}
+(pb<-nrow(subset(housing, X > x & Y > y))/n)
+```
+
+c.   $P(X<x | Y>y)$, probability of BedroomAbvGr is lower then 4th quantile (less then 8) given that SalePrice is higher then 2nd quantile (higer then 16300), only possible sscenario out of the given 3
+```{r p3, echo=TRUE}
+(pc <- nrow(subset(housing, X < x & Y > y))/ny)
+```
+
+
+***Does splitting the training data in this fashion make them independent? In other words, does $P(X|Y)=P(X)P(Y))?$   Check mathematically, and then evaluate by running a Chi Square test for association.  You might have to research this***
+
+
+Splitting the training data in this fashion does not make them independent. Hence, $P(X|Y) \neq P(X)P(Y))$. 
+
+**Contingency table**
+
+```{r Contingency, echo=TRUE}
+c1 <- nrow(subset(housing, X <=x & Y<=y))
+c2 <- nrow(subset(housing, X <=x & Y>y))
+c3 <- c1+c2
+c4 <- nrow(subset(housing, X >x & Y<=y))
+c5 <- nrow(subset(housing, X >x & Y>y))
+c6 <- c4+c5
+c7 <- c1+c4
+c8 <- c2+c5
+c9 <- c3+c6
+
+
+dfcont<-matrix(round(c(c1, c2, c3, c4, c5, c6, c7, c8, c9), 3), ncol=3, nrow=3, byrow=TRUE)
+colnames(dfcont) <-c (
+"Y<=y",
+"Y>y",
+"Total")
+rownames(dfcont) <-c ("X<=x","X>x","Total")
+
+(dfcont <-  knitr::kable(as.table(dfcont)))
+```
+
+
+To check mathematically and evaluate by running a Chi square test for associaton I will use a lower bound quartile then 4th quartile as we can see the Contingency table contains 0 (zero) values when we use the 4th qurtile.
+
+**3rd quartile of X**
+
+```{r 3rdq, echo=TRUE}
+(x <- quantile(X, 0.75))
+```
+
+
+**Contingency table using small letter "x" as the 3rd quartile of the X variable **
+
+```{r cont_Chi, echo=TRUE}
+c1 <- nrow(subset(housing, X <=x & Y<=y))
+c2 <- nrow(subset(housing, X <=x & Y>y))
+c3 <- c1+c2
+c4 <- nrow(subset(housing, X >x & Y<=y))
+c5 <- nrow(subset(housing, X >x & Y>y))
+c6 <- c4+c5
+c7 <- c1+c4
+c8 <- c2+c5
+c9 <- c3+c6
+
+
+dfcont1 <- matrix(round(c(c1, c2, c3, c4, c5, c6, c7 ,c8 ,c9), 3), ncol=3, nrow=3, byrow=TRUE)
+colnames(dfcont1) <-c (
+"Y<=y",
+"Y>y",
+"Total")
+rownames(dfcont1) <-c ("X<=x","X>x","Total")
+
+(dfcont1 <- knitr::kable(as.table(dfcont1)))
+
+```
+
+
+$$P(X|Y) = 149/728 = 0.2046703$$
+
+$$P(X) = 242/1460 = 0.1657534, \quad P(Y) = 728/1460 = 0.49863014$$
+$$P(X)P(Y) \quad = \quad 0.1657534 \times0.49863014 \quad = \quad 0.8264964$$
+
+$$\therefore P(X|Y) \neq P(X)P(Y))$$
+
+
+
+**Chi square test**
+
+```{r Chi, echo=TRUE}
+mat <- matrix(c(639, 579, 93, 149), 2, 2, byrow=T) 
+
+chisq.test(mat, correct=TRUE) 
+```
+
+From our Chi square test we can see the p-value is very small which suggest to reject $H_{0}$, in other words the data is not independent.
+
+
+###Part 3: Descriptive and Inferential Statistics
+
+***Provide univariate descriptive statistics and appropriate plots for both variables.   Provide a scatterplot of X and Y.  Transform both variables simultaneously using Box-Cox transformations.  You might have to research this. Using the transformed variables, run a correlation analysis and interpret.  Test the hypothesis that the correlation between these variables is 0 and provide a 99% confidence interval.  Discuss the meaning of your analysis.***
+
+```{r des, echo=TRUE}
+my_df <- cbind.data.frame(X, Y)
+colnames(my_df) <- c("BedroomAbvGr", "SalePrice")
+
+summary(my_df)
+
+
+skewness(my_df$BedroomAbvGr)
+
+quantile(my_df$BedroomAbvGr)
+
+quantile(my_df$SalePrice)
+
+
+par(mfrow=c(2, 2))
+hist(my_df$BedroomAbvGr, col = "blue")
+boxplot(my_df$BedroomAbvGr, main="Boxplot LotArea")
+qqnorm(my_df$BedroomAbvGr)
+qqline(my_df$BedroomAbvGr)
+
+
+par(mfrow=c(2, 2))
+hist(my_df$SalePrice, col = "green")
+boxplot(my_df$SalePrice, main="Boxplot LotArea")
+qqnorm(my_df$SalePrice)
+qqline(my_df$SalePrice)
+```
+
+
+```{r lm, echo=TRUE}
+mod = lm(SalePrice ~ BedroomAbvGr, data = my_df)
+summary(mod)
+```
+
+
+```{r scatterplot, echo=TRUE}
+plot(my_df$BedroomAbvGr, my_df$SalePrice, main = "Scatterplot SalePrice by BedroomAbvGr ")
+abline(lm(my_df$SalePrice ~ my_df$BedroomAbvGr), col="red", lwd=3)
+
+plot(mod, pch=16, which=1)
+```
+
+
+From the model and scatter plot above we can see the distribution for both the variables are not normal, the relationship between the two variable do not follow a straight line which indicates the linear relationship between the variable is unlikely . We can also see the p-value is really small, almost close to zero, we therefore reject the null hypothesis. $R^2$ value of 0.0283 indicates only 2.83% of the variance in ***SalePrice*** can be explained by ***BedroomAbvGr***. Residual standard error of 78340 tells us any prediction in ***SalePrice*** based on ***BedroomAbvGr*** will be off by $78,340, which is a significantly large variance. The residuals against the predicted values plot supports the lack of model fit.
+
+**Box-Cox Transformation**
+
+Box-Cox gives us the lambda value to wich the variables to be raised in order to get them normally distributed.
+
+```{r boxcox, echo=TRUE}
+trans <- boxcox(mod)
+
+trans_df <- as.data.frame(trans)
+
+optimal_lambda <- trans_df[which.max(trans$y),1]
+
+transdata = cbind( my_df,my_df$BedroomAbvGr^optimal_lambda, my_df$SalePrice^optimal_lambda)
+names(transdata)[3] = "BedroomAbvGr_transf"
+names(transdata)[4] = "SalePrice_transf"
+head(transdata,5)
+
+
+summary(transdata)
+
+hist(transdata$BedroomAbvGr_transf, col = "blue", main = "Historgram of BedroomAbvGr Transformed by Box-Cox")
+
+hist(transdata$SalePrice_transf, col = "green", main = "Historgram of SalePrice Transformed by Box-Cox")
+
+mod2 = lm(SalePrice_transf ~ BedroomAbvGr, data = transdata)
+summary(mod2)
+
+plot(mod2, pch=16, which=1)
+```
+
+From the plots above we can see Box-Cox give the variables a near normally distributed look and the $R^2$ value is now 0.04519 which is a slight increase but the relationship between the two variable being linear remains week.
+
+**correlation and  99% Confidence Interval**
+
+```{r cor, echo=TRUE}
+cor.test(transdata[,"BedroomAbvGr"], transdata[,"SalePrice_transf"], conf.level = .99)
+```
+
+The correlation after treansformation is -0.2125689. The p-value is nearly 0, we therefore reject the null hypothesis. The 99% confidence interval the the correlation between the two intervals is ) is: -0.2759955, -0.1472990. These interpret that there is a week negative linear relationship between the two variables.
+
+
+
+###Part 4: Linear Algebra and Correlation
+
+***Invert your correlation matrix. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix.***
+
+```{r cor_matrix, echo=TRUE}
+##correlation matrix
+##original data
+cor_data <- cor(my_df[,c("BedroomAbvGr","SalePrice")])
+cor_data
+
+##correlation matrix
+##transformed data
+cor_transdata <- cor(transdata[,c("BedroomAbvGr","SalePrice_transf")])
+cor_transdata
+
+##precision matrix
+##original data
+pre_data <- solve(cor_data)
+pre_data
+
+##precision matrix
+##transformed data
+pre_trans <- solve(cor_transdata)
+pre_trans
+
+##correlation matrix multiplied by precision matrix
+##original data
+cor_data %*% pre_data
+
+##correlation matrix multiplied by precision matrix
+##transformed data
+cor_transdata %*% pre_trans
+
+##precision matrix multiplied by correlation matrix
+##original data
+pre_data %*% cor_data 
+
+##precision matrix multiplied by correlation matrix
+##transformed data
+pre_trans %*% cor_transdata
+```
+
+
+###Part 6: Calculus-Based Probability & Statistics
+
+***Many times, it makes sense to fit a closed form distribution to data.  For your non-transformed independent variable, location shift it so that the minimum value is above zero.  Then load the MASS package and run fitdistr to fit a density function of your choice.  (See  https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fitdistr.html ).  Find the optimal value of the parameters for this distribution, and then take 1000 samples from this distribution (e.g., rexp(1000, ???) for an exponential).  Plot a histogram and compare it with a histogram of your non-transformed original variable.***
+
+```{r calculus, echo=TRUE}
+
+##shift and find minimum value of chosen variable
+
+BedroomAbvGr <- my_df$BedroomAbvGr + 1e-32
+min(BedroomAbvGr)
+
+(fit <- fitdistr(BedroomAbvGr, "exponential"))
+
+(lambda <- fit$estimate)
+
+samp <- rexp(1000, lambda)
+
+par(mfrow=c(1, 2))
+hist(samp, xlab = "BedroomAbvGr", main = "Simulated")
+hist(my_df$BedroomAbvGr, xlab = "BedroomAbvGr", main = "Observed")
+
+```
+
+There are differences between the simulated and observed data, visually from the histograms we can see the simulated data is heavily skwed to the right where as the observed data is concentrated more in the center.
+
+###Part 7:Modeling
+
+***Build some type of regression model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com  user name and score.***
+
+For my modeling I will use multiple linear regression. I am using numeric variables only and which has correlation higher then 0.5.
+
+
+```{r model, echo=TRUE}
+#Create dataframe with numeric variable only
+quantVar <- sapply(housing, is.numeric)
+quantVar_df <- housing[ , quantVar]
+head(quantVar_df)
+
+#Find correlation between SalePrice and other numeric variable
+corSales <-data.frame(apply(quantVar_df,2, function(col)cor(col, quantVar_df$SalePrice, use = "complete.obs")))
+colnames(corSales) <- c("cor")
+corSales
+
+(subset(corSales, cor > 0.5))
+
+model <- lm(SalePrice ~ OverallQual + YearBuilt + YearRemodAdd + TotalBsmtSF + X1stFlrSF + GrLivArea + FullBath + TotRmsAbvGrd + GarageCars + GarageArea, data = housing)
+
+summary(model)
+```
+
+we have a $R^2$ value of `r summary(model)$r.squared`, 77.36% of the variance can be explained by this model.  
+
+```{r predict, echo=TRUE}
+##Load Test data
+test <- read.csv("https://raw.githubusercontent.com/choudhury1023/DATA-605/master/Final%20Exam/test.csv")
+
+##predict SalePrice
+mySalePrice <- predict(model,test)
+
+##create dataframe
+prediction <- data.frame( Id = test[,"Id"],  SalePrice = mySalePrice)
+prediction[prediction<0] <- 0
+prediction <- replace(prediction,is.na(prediction),0)
+  
+head(prediction)
+
+##write .csv for submission
+write.csv(prediction, file="prediction.csv", row.names = FALSE)
+```
+![Kaggle Score](https://raw.githubusercontent.com/choudhury1023/DATA-605/master/Final%20Exam/kaggle.png)
+
+My initial submit to kaggle(user name: choudhury1023) was unsuccessful as it had NA values, my second submit was successful however the score is really low (0.85356). I need to tweak the model more or perhaps use a different regression model to improve the score.
+
+
+###Reference
+-   http://www.r-tutor.com/elementary-statistics/numerical-measures/skewness
+-   http://rstudio-pubs-static.s3.amazonaws.com/63893_9f6bc9cd73ad47aab3aa85d0193244d9.html
+-   https://stackoverflow.com/questions/11275187/r-replacing-negative-values-by-zero
+-   http://blog.journeyofanalytics.com/predictive-analytics-housing-prices/
